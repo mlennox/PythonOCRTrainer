@@ -124,6 +124,11 @@ def create_image(w,h,source_text,line_length, font_file):
 
 	return image
 
+# rather than having random fonts, we should probably have the following for each font:
+# 	pristine at different sizes and contrasts
+# 	blurred/sharpened/grimed/dust " " "
+# 	perspectived " " " "
+# 	with all messups
 font_files = fetch_font_files()
 for source_text in fetch_text_files():
 	font_file = int(random.random() * len(font_files)) - 1
