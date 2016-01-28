@@ -5,3 +5,4 @@ fonts/**
 
 texts/**
 !texts/readme.md
+!texts/Pangrams.txt
