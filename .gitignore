@@ -1,3 +1,7 @@
 googlefonts
+
 fonts/**
+!fonts/readme.md
+
 texts/**
+!texts/readme.md
