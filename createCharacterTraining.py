@@ -4,9 +4,19 @@ from PIL import ImageDraw
 import textwrap
 import numpy
 import random
+from os import listdir
+from os.path import isfile, join
+
+source_texts = []
+source_text_path = "./texts"
+source_text_files = [f for f in listdir(source_text_path) if isfile(join(source_text_path, f))]
+for src in source_text_files:
+	text_file = open(source_text_path + "/" + src)
+	source_texts.append(text_file.read())
+
 
 # will use random Project Gutenberg texts instead of this
-pangram = "Pack my box with five dozen liquor jugs. Cwm fjordbank glyphs vext quiz. Jackdaws love my big sphinx of quartz. A quick movement of the enemy will jeopardize six gunboats. Wafting zephyrs quickly vexed Jumbo. Brick quiz whangs jumpy veldt fox. The five boxing wizards jump quickly. Crazy Fredericka bought many very equisite opal jewels. Amazingly few discotheques provide jukeboxes. Sphinx of black quartz, judge my vow! Brawny gods just flocked up to quiz and vex him. MONDAY -- This new creature with the long hair is a good deal in the way. It is always hanging around and following me about. I don't like this; I am not used to company. I wish it would stay with the other animals. . . . Cloudy today, wind in the east; think we shall have rain. . . . WE? Where did I get that word-the new creature uses it. TUESDAY -- Been examining the great waterfall. It is the finest thing on the estate, I think. The new creature calls it Niagara Falls-why, I am sure I do not know. Says it LOOKS like Niagara Falls. That is not a reason, it is mere waywardness and imbecility. I get no chance to name anything myself. The new creature names everything that comes along, before I can get in a protest. And always that same pretext is offered -- it LOOKS like the thing. There is a dodo, for instance. Says the moment one looks at it one sees at a glance that it 'looks like a dodo.'' It will have to keep that name, no doubt. It wearies me to fret about it, and it does no good, anyway. Dodo! It looks no more like a dodo than I do. WEDNESDAY -- Built me a shelter against the rain, but could not have it to myself in peace. The new creature intruded. When I tried to put it out it shed water out of the holes it looks with, and wiped it away with the back of its paws, and made a noise such as some of the other animals make when they are in distress. I wish it would not talk; it is always talking. That sounds like a cheap fling at the poor creature, a slur; but I do not mean it so. I have never heard the human voice before, and any new and strange sound intruding itself here upon the solemn hush of these dreaming solitudes offends my ear and seems a false note. And this new sound is so close to me; it is right at my shoulder, right at my ear, first on one side and then on the other, and I am used only to sounds that are more or less distant from me."
+# pangram = "Pack my box with five dozen liquor jugs. Cwm fjordbank glyphs vext quiz. Jackdaws love my big sphinx of quartz. A quick movement of the enemy will jeopardize six gunboats. Wafting zephyrs quickly vexed Jumbo. Brick quiz whangs jumpy veldt fox. The five boxing wizards jump quickly. Crazy Fredericka bought many very equisite opal jewels. Amazingly few discotheques provide jukeboxes. Sphinx of black quartz, judge my vow! Brawny gods just flocked up to quiz and vex him. MONDAY -- This new creature with the long hair is a good deal in the way. It is always hanging around and following me about. I don't like this; I am not used to company. I wish it would stay with the other animals. . . . Cloudy today, wind in the east; think we shall have rain. . . . WE? Where did I get that word-the new creature uses it. TUESDAY -- Been examining the great waterfall. It is the finest thing on the estate, I think. The new creature calls it Niagara Falls-why, I am sure I do not know. Says it LOOKS like Niagara Falls. That is not a reason, it is mere waywardness and imbecility. I get no chance to name anything myself. The new creature names everything that comes along, before I can get in a protest. And always that same pretext is offered -- it LOOKS like the thing. There is a dodo, for instance. Says the moment one looks at it one sees at a glance that it 'looks like a dodo.'' It will have to keep that name, no doubt. It wearies me to fret about it, and it does no good, anyway. Dodo! It looks no more like a dodo than I do. WEDNESDAY -- Built me a shelter against the rain, but could not have it to myself in peace. The new creature intruded. When I tried to put it out it shed water out of the holes it looks with, and wiped it away with the back of its paws, and made a noise such as some of the other animals make when they are in distress. I wish it would not talk; it is always talking. That sounds like a cheap fling at the poor creature, a slur; but I do not mean it so. I have never heard the human voice before, and any new and strange sound intruding itself here upon the solemn hush of these dreaming solitudes offends my ear and seems a false note. And this new sound is so close to me; it is right at my shoulder, right at my ear, first on one side and then on the other, and I am used only to sounds that are more or less distant from me."
 
 # the key here is how to determine where the required characters are on the final image
 # font.getsize(line_of_text) will return the width and height
@@ -80,7 +90,7 @@ def create_image(w,h,source_text,line_length):
 	lines = textwrap.wrap(source_text, width=line_length)
 	w_shift = int(w/size_factor) * 2
 	h_shift = int(h/size_factor) * 2
-	bg_color = random_color(color_base + 60)
+	bg_color = random_color(color_base + 80)
 	txt_color = random_color(30)
 	image = Image.new("RGB", (w + w_shift,h + h_shift), bg_color)
 	# we will choose this font randomly too
@@ -97,8 +107,8 @@ def create_image(w,h,source_text,line_length):
 
 	return image
 
-for b in range(0,3):
-	image = create_image(ex_w,ex_h,pangram,60)
+for b in range(0,2):
+	image = create_image(ex_w,ex_h,source_texts[b],60)
 	perspective = create_perspective(image)
 	perspective.show()
 
