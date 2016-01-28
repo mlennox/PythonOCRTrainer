@@ -35,6 +35,17 @@ def fetch_text_files():
 
 	return source_texts
 
+def fetch_font_files():
+	fonts = []
+	font_path = "./fonts"
+
+	for root, dirs, files in os.walk(font_path):
+		for fnt in files:
+			if fnt.endswith(".tty"):
+				fonts.append(fnt)
+
+	return fonts
+
 # the key here is how to determine where the required characters are on the final image
 # font.getsize(line_of_text) will return the width and height
 # by a laborious process, we can find every character we require to classify
@@ -92,7 +103,7 @@ def random_color(base_color_add):
 	return result_color
 
 # create base image
-def create_image(w,h,source_text,line_length):
+def create_image(w,h,source_text,line_length, font_file):
 	lines = textwrap.wrap(source_text, width=line_length)
 	w_shift = int(w/size_factor) * 2
 	h_shift = int(h/size_factor) * 2
@@ -100,7 +111,7 @@ def create_image(w,h,source_text,line_length):
 	txt_color = random_color(30)
 	image = Image.new("RGB", (w + w_shift,h + h_shift), bg_color)
 	# we will choose this font randomly too
-	font = ImageFont.truetype("./fonts/apache/roboto/Roboto-Black.ttf", 16)
+	font = ImageFont.truetype(font_file, 16)
 	draw = ImageDraw.Draw(image)
 
 	# now draw the text
@@ -113,8 +124,13 @@ def create_image(w,h,source_text,line_length):
 
 	return image
 
+font_files = fetch_font_files()
 for source_text in fetch_text_files():
-	image = create_image(ex_w,ex_h,source_text,60)
+	font_file = int(random.random() * len(font_files)) - 1
+	image = create_image(ex_w,ex_h,source_text,60, font_files[font_file])
 	perspective = create_perspective(image)
 	perspective.show()
 
+# TODO : 
+# add random amounts of blur, sharpen etc. to mess up the text
+# also allow for a certain percentage of the texts to be pristine? 
