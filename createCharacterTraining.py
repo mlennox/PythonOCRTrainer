@@ -31,7 +31,14 @@ def fetch_text_files():
 
 	for src in source_text_files:
 		text_file = open(source_text_path + "/" + src)
-		source_texts.append(text_file.read())
+		# read in some of the file
+		text_content = ""
+		for text_file_line in text_file:
+			text_content += text_file_line
+			if (len(text_content) > 5000):
+				break
+		source_texts.append(text_content)
+		text_file.close()
 
 	return source_texts
 
@@ -41,8 +48,8 @@ def fetch_font_files():
 
 	for root, dirs, files in os.walk(font_path):
 		for fnt in files:
-			if fnt.endswith(".tty"):
-				fonts.append(fnt)
+			if fnt.endswith(".ttf"):
+				fonts.append(os.path.join(root,fnt))
 
 	return fonts
 
@@ -130,6 +137,7 @@ def create_image(w,h,source_text,line_length, font_file):
 # 	perspectived " " " "
 # 	with all messups
 font_files = fetch_font_files()
+print("font files : %s" % font_files)
 for source_text in fetch_text_files():
 	font_file = int(random.random() * len(font_files)) - 1
 	image = create_image(ex_w,ex_h,source_text,60, font_files[font_file])
