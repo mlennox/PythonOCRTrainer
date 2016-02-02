@@ -109,8 +109,42 @@ def random_color(base_color_add):
 		result_color = result_color + (255 if color > 255 else color ,)
 	return result_color
 
+def highlight_letter(font, lines, w_shift, h_shift):
+	# TODO : find collection of unique chars in text (by line?) then run through them to find the bounding box
+	# split each line by the provided letter then find the end of the line without the letter
+	# and then with the letter, and find the line height to calculate the bounding box
+	
+	# is dictionary : { 'a':[((left, top), (right, bottom)),((top, height), right)], 'b':[etc]}
+	chars_bounds = {}
+	line_top = h_shift
+
+	for line in lines:
+		chars = ''.join(set(line))
+		line_height = font.getsize(line)[1]
+		for letter in chars:
+			# does line contain the character
+			if (line.find(letter) != -1):
+				splits = line.split(letter)
+				sofar = ""
+				for split in splits:
+					# print("{0} : {1}".format(letter, sofar))
+					sofar += split
+					sans = font.getsize(sofar)
+					sofar += letter
+					avec = font.getsize(sofar)
+					bounding_box = [(w_shift + sans[0], line_top), (w_shift + avec[0], line_top + avec[1])]
+					# print("bounding box : {0}".format(bounding_box))
+					if letter in chars_bounds:
+						chars_bounds[letter].append(bounding_box)
+					else:
+						chars_bounds[letter] = [bounding_box]
+		line_top += line_height
+
+	return chars_bounds
+
 # create base image
 def create_image(w,h,source_text,line_length, font_file):
+	font = ImageFont.truetype(font_file, 16)
 	lines = textwrap.wrap(source_text, width=line_length)
 	w_shift = int(w/size_factor) * 2
 	h_shift = int(h/size_factor) * 2
@@ -120,6 +154,16 @@ def create_image(w,h,source_text,line_length, font_file):
 	# we will choose this font randomly too
 	font = ImageFont.truetype(font_file, 16)
 	draw = ImageDraw.Draw(image)
+
+	# first draw bounding boxes (for now, of first char found)
+	char_bounds = highlight_letter(font, lines, w_shift, h_shift)
+	char_keys = list(char_bounds.keys())
+	print("char keys : %s" % len(char_keys))
+	bounds = char_bounds[list(char_bounds.keys())[0]]
+	for bound in bounds:
+		print("bounds : {0}".format(bound))
+		draw.rectangle(bound, fill="red")
+
 
 	# now draw the text
 	liney = h_shift
