@@ -109,6 +109,9 @@ def random_color(base_color_add):
 		result_color = result_color + (255 if color > 255 else color ,)
 	return result_color
 
+# bounding boxes are slightly off due to kerning and metrics
+# http://stackoverflow.com/questions/2100696/can-i-get-the-kerning-value-of-two-characters-using-pil
+# be we can estimate it?
 def highlight_letter(font, lines, w_shift, h_shift):
 	# TODO : find collection of unique chars in text (by line?) then run through them to find the bounding box
 	# split each line by the provided letter then find the end of the line without the letter
