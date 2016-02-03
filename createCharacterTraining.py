@@ -109,10 +109,51 @@ def random_color(base_color_add):
 		result_color = result_color + (255 if color > 255 else color ,)
 	return result_color
 
+def get_a_kerning_value(font_descriptor, char1, char2):
+	"""See if there is some kerning value defined for a pair of characters
+	Return the kerning value as an approximated percentage of the row height."""
+
+	imagefont= ImageFont.truetype(font_descriptor, SAMPLE_SIZE)
+
+	width1= imagefont.getsize(char1)[0]
+	width2= imagefont.getsize(char2)[0]
+	widths, height= imagefont.getsize(char1 + char2)
+
+	return (widths - (width1 + width2))/float(height)
+
+def calculate_kernings(font, lines):
+	"""Runs through the entire text recording if there is a kerning value between each paired character and records it if so"""
+
+	# {'Ta':4,'he':2, etc.}
+	kernings = {}
+	for line in lines:
+		prev = ''
+		prev_w = 0
+		line_w = len(line)
+		line_pos = 1
+		for char in line:
+			char_w = font.getsize(char)[0]
+			# if one of the chars is empy or a space then skip
+			# if we are at the end of the line then skip
+			# if the character pair already recorded then calculate and print, but skip
+			if (char != ' ' and prev != '' and line_pos < line_w):
+				char_pair = prev + char
+				char_pair_w, char_pair_h = font.getsize(char_pair)
+				if (char_pair_w != char_w + prev_w):
+					kern = (char_pair_w - (prev_w + char_w)) / float(char_pair_h)
+					if not (char_pair in kernings):
+						kernings[char_pair] = kern
+					print("kern : {0} - {1}".format(char_pair, kern))
+			prev = char
+			prev_w = char_w
+			line_pos += 1
+
+	return kernings
+
 # bounding boxes are slightly off due to kerning and metrics
 # http://stackoverflow.com/questions/2100696/can-i-get-the-kerning-value-of-two-characters-using-pil
 # be we can estimate it?
-def highlight_letter(font, lines, w_shift, h_shift):
+def highlight_letter(font, lines, w_shift, h_shift, kernings):
 	# TODO : find collection of unique chars in text (by line?) then run through them to find the bounding box
 	# split each line by the provided letter then find the end of the line without the letter
 	# and then with the letter, and find the line height to calculate the bounding box
@@ -132,10 +173,15 @@ def highlight_letter(font, lines, w_shift, h_shift):
 				for split in splits:
 					# print("{0} : {1}".format(letter, sofar))
 					sofar += split
+					# grab last letter sofar
+					kern_test = sofar[-1:] + letter
+					kern_correct = 0
 					sans = font.getsize(sofar)
 					sofar += letter
 					avec = font.getsize(sofar)
-					bounding_box = [(w_shift + sans[0], line_top), (w_shift + avec[0], line_top + avec[1])]
+					if (kern_test in kernings):
+						kern_correct = kernings[kern_test] * avec[1]
+					bounding_box = [(w_shift + sans[0] + kern_correct, line_top), (w_shift + avec[0] + kern_correct, line_top + avec[1])]
 					# print("bounding box : {0}".format(bounding_box))
 					if letter in chars_bounds:
 						chars_bounds[letter].append(bounding_box)
@@ -158,13 +204,15 @@ def create_image(w,h,source_text,line_length, font_file):
 	font = ImageFont.truetype(font_file, 16)
 	draw = ImageDraw.Draw(image)
 
+	# calculate any kerning for pairs of letters for the entire text
+	kernings = calculate_kernings(font, lines)
 	# first draw bounding boxes (for now, of first char found)
-	char_bounds = highlight_letter(font, lines, w_shift, h_shift)
+	char_bounds = highlight_letter(font, lines, w_shift, h_shift, kernings)
 	char_keys = list(char_bounds.keys())
 	print("char keys : %s" % len(char_keys))
 	bounds = char_bounds[list(char_bounds.keys())[0]]
 	for bound in bounds:
-		print("bounds : {0}".format(bound))
+		#print("bounds : {0}".format(bound))
 		draw.rectangle(bound, fill="red")
 
 
