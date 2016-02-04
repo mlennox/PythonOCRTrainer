@@ -136,7 +136,7 @@ def calculate_kernings(font, lines):
 			# if one of the chars is empy or a space then skip
 			# if we are at the end of the line then skip
 			# if the character pair already recorded then calculate and print, but skip
-			if (char != ' ' and prev != '' and line_pos < line_w):
+			if (prev != '' and line_pos < line_w):
 				char_pair = prev + char
 				char_pair_w, char_pair_h = font.getsize(char_pair)
 				if (char_pair_w != char_w + prev_w):
@@ -148,14 +148,21 @@ def calculate_kernings(font, lines):
 			prev_w = char_w
 			line_pos += 1
 
-	return kernings
+	return {} #kernings
 
 def calculate_word_kern(font, kernings, line):
 	"""Specifically, this looks for the accumulated kern for the last letter within the last word or word fragment of line"""
 
 	lastword_pos = line.rfind(" ")
-	lastword = line[lastword_pos:len(line)]
-	print('last word : {0} {1}'.format(lastword_pos,lastword))
+	if (lastword_pos == -1):
+		lastword = line
+	else:
+		# we also want to include the space here
+		# TODO : we may need to account for three characters 
+		# in the case when the last char of word is kerned so the next char of 
+		# following word needs to be adjusted too?
+		lastword = line[lastword_pos:len(line)]
+	# print('last word : {0} {1}'.format(lastword_pos,lastword))
 	total_kern = 0
 	prev = ''
 	for char in lastword:
@@ -165,7 +172,7 @@ def calculate_word_kern(font, kernings, line):
 			# print('{0} - {1}'.format(pair,kernings[pair]))
 		prev = char
 
-	print('{0} - {1}'.format(lastword, total_kern))
+	# print('{0} - {1}'.format(lastword, total_kern))
 	return total_kern
 
 # bounding boxes are slightly off due to kerning and metrics
