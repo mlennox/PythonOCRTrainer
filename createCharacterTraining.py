@@ -140,15 +140,33 @@ def calculate_kernings(font, lines):
 				char_pair = prev + char
 				char_pair_w, char_pair_h = font.getsize(char_pair)
 				if (char_pair_w != char_w + prev_w):
-					kern = (char_pair_w - (prev_w + char_w)) / float(char_pair_h)
+					kern = (char_pair_w - (prev_w + char_w)) # / float(char_pair_h)
 					if not (char_pair in kernings):
 						kernings[char_pair] = kern
-					print("kern : {0} - {1}".format(char_pair, kern))
+					# print("kern : {0} - {1}".format(char_pair, kern))
 			prev = char
 			prev_w = char_w
 			line_pos += 1
 
 	return kernings
+
+def calculate_word_kern(font, kernings, line):
+	"""Specifically, this looks for the accumulated kern for the last letter within the last word or word fragment of line"""
+
+	lastword_pos = line.rfind(" ")
+	lastword = line[lastword_pos:len(line)]
+	print('last word : {0} {1}'.format(lastword_pos,lastword))
+	total_kern = 0
+	prev = ''
+	for char in lastword:
+		pair = prev + char
+		if (pair in kernings):
+			total_kern += kernings[pair]
+			# print('{0} - {1}'.format(pair,kernings[pair]))
+		prev = char
+
+	print('{0} - {1}'.format(lastword, total_kern))
+	return total_kern
 
 # bounding boxes are slightly off due to kerning and metrics
 # http://stackoverflow.com/questions/2100696/can-i-get-the-kerning-value-of-two-characters-using-pil
@@ -173,15 +191,18 @@ def highlight_letter(font, lines, w_shift, h_shift, kernings):
 				for split in splits:
 					# print("{0} : {1}".format(letter, sofar))
 					sofar += split
-					# grab last letter sofar
-					kern_test = sofar[-1:] + letter
-					kern_correct = 0
+					if (len(sofar) == len(line)):
+						break
+					# # grab last letter sofar
+					# kern_test = sofar[-1:] + letter
+					# kern_correct = 0
 					sans = font.getsize(sofar)
 					sofar += letter
 					avec = font.getsize(sofar)
-					if (kern_test in kernings):
-						kern_correct = kernings[kern_test] * avec[1]
-					bounding_box = [(w_shift + sans[0] + kern_correct, line_top), (w_shift + avec[0] + kern_correct, line_top + avec[1])]
+					# if (kern_test in kernings):
+					# 	kern_correct = kernings[kern_test]
+					kern_correct = calculate_word_kern(font,kernings,sofar)
+					bounding_box = [(w_shift + sans[0] + kern_correct, line_top), (w_shift + avec[0], line_top + avec[1])]
 					# print("bounding box : {0}".format(bounding_box))
 					if letter in chars_bounds:
 						chars_bounds[letter].append(bounding_box)
@@ -193,7 +214,7 @@ def highlight_letter(font, lines, w_shift, h_shift, kernings):
 
 # create base image
 def create_image(w,h,source_text,line_length, font_file):
-	font = ImageFont.truetype(font_file, 16)
+	font = ImageFont.truetype(font_file, 16 + int(random.random() * 6) - int(random.random() * 6))
 	lines = textwrap.wrap(source_text, width=line_length)
 	w_shift = int(w/size_factor) * 2
 	h_shift = int(h/size_factor) * 2
