@@ -9,6 +9,8 @@ import os
 # from os.path import isfile, join
 
 line_length=60
+base_font_size=20
+font_range=8
 
 
 # will be used to divide the image size to determine limit of perspective shift
@@ -221,7 +223,7 @@ def highlight_letter(font, lines, w_shift, h_shift, kernings):
 
 # create base image
 def create_image(w,h,source_text,line_length, font_file):
-	font = ImageFont.truetype(font_file, 16 + int(random.random() * 6) - int(random.random() * 6))
+	font = ImageFont.truetype(font_file, base_font_size + int(random.random() * font_range) - int(random.random() * font_range))
 	lines = textwrap.wrap(source_text, width=line_length)
 	w_shift = int(w/size_factor) * 2
 	h_shift = int(h/size_factor) * 2
@@ -229,7 +231,7 @@ def create_image(w,h,source_text,line_length, font_file):
 	txt_color = random_color(30)
 	image = Image.new("RGB", (w + w_shift,h + h_shift), bg_color)
 	# we will choose this font randomly too
-	font = ImageFont.truetype(font_file, 16)
+	# font = ImageFont.truetype(font_file, 16)
 	draw = ImageDraw.Draw(image)
 
 	# calculate any kerning for pairs of letters for the entire text
@@ -238,7 +240,7 @@ def create_image(w,h,source_text,line_length, font_file):
 	char_bounds = highlight_letter(font, lines, w_shift, h_shift, kernings)
 	char_keys = list(char_bounds.keys())
 	print("char keys : %s" % len(char_keys))
-	bounds = char_bounds[list(char_bounds.keys())[0]]
+	bounds = char_bounds['e']
 	for bound in bounds:
 		#print("bounds : {0}".format(bound))
 		draw.rectangle(bound, fill="red")
@@ -264,7 +266,8 @@ print("font files : %s" % font_files)
 for source_text in fetch_text_files():
 	font_file = int(random.random() * len(font_files)) - 1
 	image = create_image(ex_w,ex_h,source_text,60, font_files[font_file])
-	perspective = create_perspective(image)
+	# perspective = create_perspective(image)
+	perspective = image
 	perspective.show()
 
 # TODO : 
