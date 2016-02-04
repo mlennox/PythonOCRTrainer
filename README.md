@@ -5,7 +5,8 @@ Generates ersatz scanned diagrams and calculates bounding boxes for each charact
 
 ![Character bounding boxes](https://github.com/mlennox/PythonOCRTrainer/blob/master/Example.png)
 
-## Note
-Pillow/PIL does not have proper access to the details of font kerning, baselines etc. we estimate the kerning by calculating the character widths on their own, then together.
+Each red box above is a bounding box for the character 'e'. You can see that it is not exactly perfect just yet - I'm still working with calculating the kerning properly.
 
-Some fonts seem to have a problem with the measured bounding box not surrounding each character due to the baseline being too low - I can't see a solution for that just yet...
+## Note
+Currently the kerning tests pairs of characters, stores the values and then apples it to each pair in the source text. Observation shows that kerned characters at the ned of a word seem to effect the next word. Some fonts also seem to have bizzare baselines resulting in poor tracking of bounding boxes.
+
