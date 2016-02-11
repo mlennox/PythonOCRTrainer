@@ -4,6 +4,9 @@ Generates ersatz scanned diagrams and calculates bounding boxes for each charact
 ## Scope
 I am writing this as part of a project that will be OCRing text in real-world photographs so I needed something that can generate a range of training images from different fonts, with varying contrast, and exhibiting perspective, skew, blur and other distortions.
 
+## Bounding boxes
+It seems to be easier to find the font metrics using the node library ![fontkit](https://www.npmjs.com/package/fontkit).The 'boundingboxes' subfolder contains a nodejs app to generate bounding boxes from same font and text data used to generate the 'scans'.
+
 ## Examples
 ![Character bounding boxes](https://github.com/mlennox/PythonOCRTrainer/blob/master/Example.png)
 
