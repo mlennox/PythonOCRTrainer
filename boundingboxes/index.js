@@ -2,46 +2,121 @@ var fk = require('fontkit');
 var pp = require('pretty-print');
 var decirc = require('smart-circular');
 var _ = require('lodash');
+var fse = require('fs-extra');
 
 var gposLookupType = ['undefined', 'Single Adjustment', 'Pair Adjustment', 'Cursive Attachment', 'MarkToBase Attachment', 'MarkToLigature Attachment', 'MarkToMark Attachment', 'Context Positioning', 'Chained Context Positioning', 'Extension Positioning'];
 
 var example_text = "Fi"
 
-// need to do this automatically
-var lg = fk.openSync('./fonts/luckiestguy/LuckiestGuy.ttf');
+function fetch_fonts() {
+	console.log('going to fetch fonts');
 
-var lay = lg.layout(example_text);
+	return new Promise(function(resolve, reject) {
+		var fonts = [];
+		fse.walk('../fonts')
+			.on('data', function(item) {
+				if (item && item.path && item.path.indexOf('.ttf') === item.path.length - 4){
+					fonts.push(item.path);
+					// yield item.path;
+				}
+			})
+			.on('end', function() {
+				console.log('now finished loading fonts', fonts);
+				resolve(fonts);
+			});
+	});
 
-// https://www.microsoft.com/typography/otspec/gpos.htm
+	
 
-// returns a restructure/Struct
-// not sure how to access the properties yet
-// var thing = lay.glyphs[0]._font._tables.GPOS.lookupList;
+	// return fonts;
+}
 
-var tables = lay.glyphs[0]._font._tables;
-var gpos = tables.GPOS;
+function show_font_details(font) {
+	console.log('showing details of font');
 
-var scriptList = gpos.scriptList;
-console.log('script list', scriptList);
+	var lg = fk.openSync(font);
 
-var featureList = gpos.featureList;
-console.log('feature list', featureList);
-console.log('feature list, lookup list indices', featureList[0].feature.lookupListIndexes);
+	var lay = lg.layout(example_text);
+
+	// https://www.microsoft.com/typography/otspec/gpos.htm
+
+	// returns a restructure/Struct
+	// not sure how to access the properties yet
+	// var thing = lay.glyphs[0]._font._tables.GPOS.lookupList;
+
+	var tables = lay.glyphs[0]._font._tables;
+	var gpos = tables.GPOS;
+
+	var scriptList = gpos.scriptList;
+	console.log('script list', scriptList);
+
+	var featureList = gpos.featureList;
+	console.log('feature list', featureList);
+	console.log('feature list, lookup list indices', featureList[0].feature.lookupListIndexes);
 
 
-// lookup list tables
-// https://www.microsoft.com/typography/otspec/chapter2.htm
+	// lookup list tables
+	// https://www.microsoft.com/typography/otspec/chapter2.htm
 
-// when adjusting glyphs, run through each lookuplist
-var lookupList = gpos.lookupList.items[0]; // it's a 'Struct'
-console.log('lookupType -- ', gposLookupType[lookupList.lookupType]);
-console.log('lookup list -- ', lookupList);
+	// when adjusting glyphs, run through each lookuplist
+	var lookupList = gpos.lookupList.items[0]; // it's a 'Struct'
+	console.log('lookupType -- ', gposLookupType[lookupList.lookupType]);
+	console.log('lookup list -- ', lookupList);
 
-// then run through each subtable of each lookuplist
+	// then run through each subtable of each lookuplist
 
-console.log('lookup list, subtables -- ', lookupList.subTables);
-console.log('lookup list, coverage -- ', lookupList.subTables[0].coverage);
-console.log('lookup list, class records [0] -- ', lookupList.classRecords);
+	//console.log('lookup list, subtables -- ', lookupList.subTables);
+	console.log('lookup list, coverage -- ', lookupList.subTables[0].coverage);
+	console.log('lookup list, class records [0] -- ', lookupList.classRecords);
+}
+
+fetch_fonts()
+	.then(function(fonts){
+		console.log(fonts);
+		for (var font of fonts){
+			console.log(font);
+			show_font_details(font);
+		}
+	})
+
+
+
+
+// // need to do this automatically
+// var lg = fk.openSync('../fonts/luckiestguy/LuckiestGuy.ttf');
+
+// var lay = lg.layout(example_text);
+
+// // https://www.microsoft.com/typography/otspec/gpos.htm
+
+// // returns a restructure/Struct
+// // not sure how to access the properties yet
+// // var thing = lay.glyphs[0]._font._tables.GPOS.lookupList;
+
+// var tables = lay.glyphs[0]._font._tables;
+// var gpos = tables.GPOS;
+
+// var scriptList = gpos.scriptList;
+// console.log('script list', scriptList);
+
+// var featureList = gpos.featureList;
+// console.log('feature list', featureList);
+// console.log('feature list, lookup list indices', featureList[0].feature.lookupListIndexes);
+
+
+// // lookup list tables
+// // https://www.microsoft.com/typography/otspec/chapter2.htm
+
+// // when adjusting glyphs, run through each lookuplist
+// var lookupList = gpos.lookupList.items[0]; // it's a 'Struct'
+// console.log('lookupType -- ', gposLookupType[lookupList.lookupType]);
+// console.log('lookup list -- ', lookupList);
+
+// // then run through each subtable of each lookuplist
+
+// console.log('lookup list, subtables -- ', lookupList.subTables);
+// console.log('lookup list, coverage -- ', lookupList.subTables[0].coverage);
+// console.log('lookup list, class records [0] -- ', lookupList.classRecords);
 
 
 // The GPOS table is organized so text processing clients can easily locate the features and lookups that apply to a particular script or language system. To access GPOS information, clients should use the following procedure:
