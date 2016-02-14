@@ -38,7 +38,26 @@ function fetch_fonts() {
  * @return {[type]}            [description]
  */
 function convert_coverage(glyphId, coverage, lookupList) {
+	var result = null,
+		index_offset = null;
 
+	// find the glyph id in the coverage list
+	// 		if it does not exist then no further calculation needed for this lookup table for this glyph
+	// using the index offset, add the glyphid to find the relevant offsets for that glyph
+	// return the value!
+	
+	// there are two types of coverage lists - list (version 1) and ranges (version 2)
+	if ( coverage.version === 1){
+		index_offset = _.indexOf(coverage.glyphs, glyphId);
+	} else {
+		index_offset = _.map(_.filter(coverage.rangeRecords, function (rng){
+			return rng.start <= glyphId && rng.end >= glyphId;
+		}), function (candidate) { return candidate.startCoverageIndex; });
+	}
+
+	if (index_offset && index_offset > -1){
+		// the positioning data is usually single or pair adjustment
+	}
 }
 
 function show_font_details(font) {
@@ -61,9 +80,11 @@ function show_font_details(font) {
 		console.log('FONT -=-=-=-=-=-=-=-');
 		var gpos = thing._font._tables.GPOS;
 		console.log('GPOS : ', gpos);
-		for (var lookup of gpos.lookupList.items[0].subTables){
+		var lookupList = gpos.lookupList.items[0];
+		for (var lookup of lookupList.subTables){
 			console.log('COVERAGE : ',lookup.coverage);
-			// console.log('COVERAGE : ',lookup.coverage);
+			console.log('type: ', gposLookupType[lookupList.lookupType]);
+			console.log('keys : ',_.keys(lookup));
 		}
 		console.log('Lookups : ',thing._font._tables.GPOS);
 	}
