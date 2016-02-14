@@ -6,7 +6,8 @@ var fse = require('fs-extra');
 
 var gposLookupType = ['undefined', 'Single Adjustment', 'Pair Adjustment', 'Cursive Attachment', 'MarkToBase Attachment', 'MarkToLigature Attachment', 'MarkToMark Attachment', 'Context Positioning', 'Chained Context Positioning', 'Extension Positioning'];
 
-var example_text = "Fi"
+// we will want to load the texts too
+var example_text = "FiFM"
 
 function fetch_fonts() {
 	console.log('going to fetch fonts');
@@ -17,11 +18,9 @@ function fetch_fonts() {
 			.on('data', function(item) {
 				if (item && item.path && item.path.indexOf('.ttf') === item.path.length - 4){
 					fonts.push(item.path);
-					// yield item.path;
 				}
 			})
 			.on('end', function() {
-				console.log('now finished loading fonts', fonts);
 				resolve(fonts);
 			});
 	});
@@ -31,12 +30,44 @@ function fetch_fonts() {
 	// return fonts;
 }
 
+/**
+ * Finds the offsets for the current glyph from the lookupList
+ * @param  {[type]} glyphId    [description]
+ * @param  {[type]} coverage   [description]
+ * @param  {[type]} lookupList [description]
+ * @return {[type]}            [description]
+ */
+function convert_coverage(glyphId, coverage, lookupList) {
+
+}
+
 function show_font_details(font) {
 	console.log('showing details of font');
 
 	var lg = fk.openSync(font);
 
 	var lay = lg.layout(example_text);
+
+	console.log(lay);
+
+	console.log('-------------------------------------------------------------');
+	for (var thing of lay.glyphs){
+		console.log('GLYPH =============');
+		// pp(decirc(thing));
+		console.log(thing.path.bbox);
+		console.log(thing.id);
+		console.log(thing._metrics);
+
+		console.log('FONT -=-=-=-=-=-=-=-');
+		var gpos = thing._font._tables.GPOS;
+		console.log('GPOS : ', gpos);
+		for (var lookup of gpos.lookupList.items[0].subTables){
+			console.log('COVERAGE : ',lookup.coverage);
+			// console.log('COVERAGE : ',lookup.coverage);
+		}
+		console.log('Lookups : ',thing._font._tables.GPOS);
+	}
+	console.log('-------------------------------------------------------------');
 
 	// https://www.microsoft.com/typography/otspec/gpos.htm
 
@@ -67,17 +98,20 @@ function show_font_details(font) {
 
 	//console.log('lookup list, subtables -- ', lookupList.subTables);
 	console.log('lookup list, coverage -- ', lookupList.subTables[0].coverage);
-	console.log('lookup list, class records [0] -- ', lookupList.classRecords);
+	// console.log('lookup list, class records [0] -- ', lookupList.classRecords);
 }
 
 fetch_fonts()
 	.then(function(fonts){
-		console.log(fonts);
+		// console.log(fonts);
 		for (var font of fonts){
-			console.log(font);
+			console.log('details for font', font);
 			show_font_details(font);
 		}
 	})
+	.catch(function(err) {
+		console.log(err);
+	});
 
 
 
