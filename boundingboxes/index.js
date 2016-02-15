@@ -41,6 +41,7 @@ function convert_coverage(glyphId, coverage, lookupList) {
 	var result = null,
 		index_offset = null;
 
+	console.log('convert_coverage =-=-=-=-=-=-=-=-=-=-');
 	// find the glyph id in the coverage list
 	// 		if it does not exist then no further calculation needed for this lookup table for this glyph
 	// using the index offset, add the glyphid to find the relevant offsets for that glyph
@@ -48,16 +49,24 @@ function convert_coverage(glyphId, coverage, lookupList) {
 	
 	// there are two types of coverage lists - list (version 1) and ranges (version 2)
 	if ( coverage.version === 1){
+		console.log('list index');
 		index_offset = _.indexOf(coverage.glyphs, glyphId);
 	} else {
-		index_offset = _.map(_.filter(coverage.rangeRecords, function (rng){
+		console.log('range index');
+		filtered = _.filter(coverage.rangeRecords, function (rng){
 			return rng.start <= glyphId && rng.end >= glyphId;
-		}), function (candidate) { return candidate.startCoverageIndex; });
+		});
+		console.log('filtered', filtered);
+		index_offset = filtered.length === 0 ? null : filtered[0].startCoverageIndex;
+		console.log('index offset : ', index_offset);
 	}
 
 	if (index_offset && index_offset > -1){
 		// the positioning data is usually single or pair adjustment
+		
 	}
+
+	return result;
 }
 
 function show_font_details(font) {
@@ -84,7 +93,8 @@ function show_font_details(font) {
 		for (var lookup of lookupList.subTables){
 			console.log('COVERAGE : ',lookup.coverage);
 			console.log('type: ', gposLookupType[lookupList.lookupType]);
-			console.log('keys : ',_.keys(lookup));
+			console.log('lookup: ', convert_coverage(thing.id, lookup.coverage, lookup));
+			// console.log('keys : ',_.keys(lookup));
 		}
 		console.log('Lookups : ',thing._font._tables.GPOS);
 	}
